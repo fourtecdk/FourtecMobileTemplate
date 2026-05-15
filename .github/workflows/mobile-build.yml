@@ -1,28 +1,38 @@
 name: Mobile Build (Internal)
+
 on:
-  # This allows your AL Action to trigger the build via API
+  # Allows your Business Central AL code to trigger this via API
   repository_dispatch:
     types: [trigger-mobile-build]
-  # Standard trigger on push to main
+  # Triggers when you push changes to the main branch
   push:
     branches: [ main ]
+  # Allows you to click a "Run Workflow" button manually in GitHub
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: ?? Checkout
+      - name: 🔍 Checkout Repository
         uses: actions/checkout@v4
 
-      - name: ?? Setup Expo
+      - name: 🏗 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: 🚀 Setup Expo & EAS
         uses: expo/expo-github-action@v8
         with:
           expo-version: latest
-          eas-cache: true
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
 
-      - name: ?? Install Dependencies
+      - name: 📦 Install Dependencies
         run: npm install
 
-      - name: ?? Build Internal APK
-        # This uses the 'preview' profile from your eas.json to create a direct download link
+      - name: 🏗 Build Internal APK
+        # --non-interactive is key here so the build doesn't "wait" for a human to click anything
         run: eas build --platform android --profile preview --non-interactive
