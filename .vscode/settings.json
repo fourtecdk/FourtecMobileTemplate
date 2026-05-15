@@ -1,7 +1,11 @@
 {
-  "editor.codeActionsOnSave": {
-    "source.fixAll": "explicit",
-    "source.organizeImports": "explicit",
-    "source.sortMembers": "explicit"
+  "al.enableCodeAnalysis": false,
+  "files.associations": {
+    "app.config.js": "javascript",
+    "*.env": "properties"
+  },
+  "search.exclude": {
+    "**/.alpackages": true,
+    "**/node_modules": true
   }
 }
