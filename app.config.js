@@ -31,9 +31,8 @@ export default {
       favicon: "./assets/images/favicon.png"
     },
     extra: {
-      eas: {
-        // This is where your Expo Project ID goes if you use EAS
-        projectId: "your-project-id-here" 
+      "eas": {
+        "projectId": "114e515a-70f9-46d4-9d2c-9fcd1908d2e9"
       }
     }
   }
