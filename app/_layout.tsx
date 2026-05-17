@@ -7,6 +7,7 @@ import { useEffect } from 'react';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/components/useColorScheme';
+import { FourtecColors } from '@/constants/Colors';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -47,12 +48,22 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+
+  const detailScreenOptions = {
+    headerStyle: { backgroundColor: isDark ? FourtecColors.navyDark : FourtecColors.white },
+    headerTintColor: isDark ? FourtecColors.white : FourtecColors.navyDark,
+    headerTitleStyle: { fontWeight: '700' as const },
+  };
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="customer/[id]" options={{ title: 'Customer', ...detailScreenOptions }} />
+        <Stack.Screen name="item/[id]" options={{ title: 'Item', ...detailScreenOptions }} />
+        <Stack.Screen name="vendor/[id]" options={{ title: 'Vendor', ...detailScreenOptions }} />
       </Stack>
     </ThemeProvider>
   );
