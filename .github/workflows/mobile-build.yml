@@ -1,7 +1,7 @@
 name: Mobile Build (Internal)
 
 on:
-  # Allows your Business Central AL code to trigger this via API
+  # Allows your orchestration code or external platforms to trigger this via API
   repository_dispatch:
     types: [trigger-mobile-build]
   # Triggers when you push changes to the main branch
@@ -33,6 +33,15 @@ jobs:
       - name: 📦 Install Dependencies
         run: npm install
 
-      - name: 🏗 Build Internal APK
-        # --non-interactive is key here so the build doesn't "wait" for a human to click anything
-        run: eas build --platform android --profile preview --non-interactive
+      - name: 🏗 Initialize Project & Build Internal APK
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          # 1. Clear any old structural data or IDs that traveling from the template
+          rm -rf .eas
+          
+          # 2. Silently provision a unique, completely isolated project card on your Expo dashboard
+          npx eas-cli project:init --force --non-interactive
+          
+          # 3. Fire off the compiler and disconnect immediately to save build minutes
+          eas build --platform android --profile preview --non-interactive --no-wait
