@@ -2,6 +2,15 @@
   "build": {
     "preview": {
       "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_BC_TENANT_ID": "1e11ede3-9705-4444-9a92-4a61e1b40e10",
+        "EXPO_PUBLIC_BC_CLIENT_ID": "b5bfa344-0d9a-45b8-961e-bd34a543c4b6",
+        "EXPO_PUBLIC_BC_CLIENT_SECRET": "$CLIENT_SECRET",
+        "EXPO_PUBLIC_BC_ENVIRONMENT": "MCP_Server_THA_HBO",
+        "EXPO_PUBLIC_BC_COMPANY_ID": "5097a676-dc3c-f111-bec2-7c1e52fc7b51",
+        "EXPO_PUBLIC_BC_BASE_URL": "https://api.businesscentral.dynamics.com/v2.0",
+        "EXPO_PUBLIC_BC_SCOPE": "https://api.businesscentral.dynamics.com/.default"
+      },
       "android": {
         "buildType": "apk"
       },

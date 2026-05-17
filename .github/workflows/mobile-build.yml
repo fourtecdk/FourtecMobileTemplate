@@ -1,13 +1,6 @@
-name: Mobile Build (Internal)
+name: Initialize
 
 on:
-  # Allows your orchestration code or external platforms to trigger this via API
-  repository_dispatch:
-    types: [trigger-mobile-build]
-  # Triggers when you push changes to the main branch
-  push:
-    branches: [ main ]
-  # Allows you to click a "Run Workflow" button manually in GitHub
   workflow_dispatch:
 
 jobs:
@@ -31,17 +24,16 @@ jobs:
           token: ${{ secrets.EXPO_TOKEN }}
 
       - name: 📦 Install Dependencies
-        run: npm install
+        run: npm install --legacy-peer-deps
 
-      - name: 🏗 Initialize Project & Build Internal APK
+      - name: 🏗 Queue EAS Build (no-wait)
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: |
-          # 1. Clear any old structural data or IDs that traveling from the template
           rm -rf .eas
-          
-          # 2. Silently provision a unique, completely isolated project card on your Expo dashboard
           npx eas-cli project:init --force --non-interactive
-          
-          # 3. Fire off the compiler and disconnect immediately to save build minutes
           eas build --platform android --profile preview --non-interactive --no-wait
+
+      - name: ℹ️ Publish step
+        run: |
+          echo "Build queued. To produce a downloadable release artifact, run the 'Publish App' workflow."

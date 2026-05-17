@@ -1,0 +1,92 @@
+name: Publish App
+
+on:
+  # Trigger manually from the GitHub Actions tab
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: 'Platform to publish'
+        required: true
+        default: 'android'
+        type: choice
+        options:
+          - android
+          - ios
+          - all
+
+jobs:
+  publish:
+    name: 🚀 Build & Publish APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🔍 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🏗 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: 🚀 Setup Expo & EAS
+        uses: expo/expo-github-action@v8
+        with:
+          expo-version: latest
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: 📦 Install Dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: 🔑 Resolve Platform
+        id: platform
+        run: |
+          # Use workflow_dispatch input when triggered manually,
+          # fall back to 'android' for tag-based triggers
+          PLATFORM="${{ github.event.inputs.platform }}"
+          echo "target=${PLATFORM:-android}" >> $GITHUB_OUTPUT
+
+      - name: 🏗 Build & Wait for Artifact
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          eas build \
+            --platform ${{ steps.platform.outputs.target }} \
+            --profile preview \
+            --non-interactive \
+            --wait
+
+      - name: 📥 Download Built Artifact
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          mkdir -p dist
+          eas build:list \
+            --platform ${{ steps.platform.outputs.target }} \
+            --status finished \
+            --limit 1 \
+            --json \
+            --non-interactive > dist/build-meta.json
+          cat dist/build-meta.json
+
+          # Extract the artifact URL and download it
+          APK_URL=$(cat dist/build-meta.json | node -e "
+            const data = JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));
+            const build = Array.isArray(data) ? data[0] : data;
+            console.log(build.artifacts?.buildUrl || build.buildUrl || '');
+          ")
+
+          if [ -n "$APK_URL" ]; then
+            echo "Downloading artifact from $APK_URL"
+            curl -L -o dist/fourtec-mobile.apk "$APK_URL"
+          else
+            echo "No artifact URL found — check build-meta.json above"
+          fi
+
+      - name:  Upload APK as Workflow Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fourtec-mobile-${{ github.ref_name || 'manual' }}
+          path: dist/fourtec-mobile.apk
+          retention-days: 30
