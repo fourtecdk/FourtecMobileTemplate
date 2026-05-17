@@ -2,6 +2,15 @@ name: Initialize
 
 on:
   workflow_dispatch:
+    inputs:
+      app_name:
+        description: 'App display name (e.g. "CustomerName")'
+        required: true
+        default: 'Fourtec Mobile'
+      app_slug:
+        description: 'Expo project slug (e.g. "fourtec-CustomerName", lowercase + hyphens only)'
+        required: true
+        default: 'fourtec-mobile'
 
 jobs:
   initialize-project:
@@ -26,20 +35,44 @@ jobs:
       - name: 📦 Install Dependencies
         run: npm install --legacy-peer-deps
 
-      - name: 🔗 Provision Expo Dashboard Slot
+      - name: 🔗 Provision Brand New Project UUID
+        id: create_project
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-          # Pass the variables so the configuration block can resolve during validation
-          EXPO_PUBLIC_APP_NAME: "AS Knud Jepsen Mobile"
-          EXPO_PUBLIC_APP_SLUG: "fourtec-asknudjepsen"
-          EXPO_PROJECT_ID: "your-client-specific-uuid-here"
+          EXPO_PUBLIC_APP_NAME: ${{ github.event.inputs.app_name }}
+          EXPO_PUBLIC_APP_SLUG: ${{ github.event.inputs.app_slug }}
         run: |
-          # We use project:info instead of project:init. 
-          # This forces EAS to look up or assert the project's existence on the cloud 
-          # without attempting to write back to your dynamic app.config.js!
-          npx eas-cli project:info --non-interactive
+          # 1. Clear out old trace linkages
+          rm -rf .eas
+          
+          # 2. We trigger info with json formatting. If the slug doesn't exist under your account, 
+          # Expo automatically provisions it as a brand new project card and returns its new data block!
+          echo "Asserting project generation on Expo Servers..."
+          npx eas-cli project:info --json --non-interactive > project-meta.json
+          cat project-meta.json
+          
+          # 3. Extract the fresh UUID and save it to the GitHub workflow scope
+          NEW_UUID=$(cat project-meta.json | node -e "
+            const data = JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));
+            console.log(data.id || data.projectId || '');
+          ")
+          echo "target_uuid=$NEW_UUID" >> $GITHUB_OUTPUT
+          
+          echo "--------------------------------------------------------"
+          echo "SUCCESS: Brand New Project Allocated on Expo Dashboard!"
+          echo "ASSIGNED UUID: $NEW_UUID"
+          echo "--------------------------------------------------------"
 
-      - name: ℹ️ Next Steps
+      - name: 💾 Save Project Settings as Repository Variables
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "Project slot successfully asserted/created on Expo Dashboard."
-          echo "Run the 'Publish App' workflow whenever you are ready to compile the actual APK."
+          gh variable set APP_NAME   --body "${{ github.event.inputs.app_name }}"
+          gh variable set APP_SLUG   --body "${{ github.event.inputs.app_slug }}"
+          gh variable set EXPO_PROJECT_ID --body "${{ steps.create_project.outputs.target_uuid }}"
+          echo "Variables saved: APP_NAME, APP_SLUG, EXPO_PROJECT_ID"
+
+      - name: ℹ️ Next Steps Guide
+        run: |
+          echo "Initialization complete. APP_NAME, APP_SLUG and EXPO_PROJECT_ID have been saved as repository variables."
+          echo "You can now trigger the 'Publish App' workflow — no manual inputs needed."
