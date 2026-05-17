@@ -76,6 +76,20 @@ EXPO_PUBLIC_BC_COMPANY_ID
 EXPO_PUBLIC_BC_BASE_URL
 ```
 
+**Important — always prompt the developer for missing variables.**
+Before generating any service, screen, or configuration that depends on BC credentials, check whether a `.env` file exists and contains all six variables above. If any are missing or the file does not exist, stop and ask the developer to provide the values before continuing. Use this prompt:
+
+> The following environment variables are required in your `.env` file before the app can connect to Business Central. Please provide the values:
+>
+> | Variable | Description |
+> |---|---|
+> | `EXPO_PUBLIC_BC_TENANT_ID` | Azure Entra (AAD) tenant ID |
+> | `EXPO_PUBLIC_BC_CLIENT_ID` | App registration client ID |
+> | `EXPO_PUBLIC_BC_CLIENT_SECRET` | App registration client secret |
+> | `EXPO_PUBLIC_BC_ENVIRONMENT` | BC environment name (e.g. `Production`) |
+> | `EXPO_PUBLIC_BC_COMPANY_ID` | BC company GUID |
+> | `EXPO_PUBLIC_BC_BASE_URL` | BC OData base URL (e.g. `https://api.businesscentral.dynamics.com/v2.0`) |
+
 ## Coding Conventions
 - Use functional components with React hooks.
 - Use `StyleSheet.create` for styles — no inline style objects.
