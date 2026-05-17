@@ -1,38 +1,44 @@
-import 'dotenv/config'; // Required if building locally to read .env
-
-export default {
+module.exports = {
   expo: {
-    // Dynamically set from .env
+    // 1. App Identity Mapping
     name: process.env.EXPO_PUBLIC_APP_NAME || "Fourtec Mobile Template",
     slug: process.env.EXPO_PUBLIC_APP_SLUG || "fourtec-mobile",
+    owner: "bruger2",
+    
+    // 2. Main Bundle and Platform Specifications
     version: "1.0.0",
     orientation: "portrait",
-    icon: "./assets/images/icon.png",
+    icon: "./assets/icon.png",
     userInterfaceStyle: "light",
     splash: {
-      image: "./assets/images/splash.png",
+      image: "./assets/splash.png",
       resizeMode: "contain",
       backgroundColor: "#ffffff"
     },
+    assetBundlePatterns: ["**/*"],
     ios: {
       supportsTablet: true,
-      // Dynamic Bundle ID (e.g., com.fourtec.renoas)
       bundleIdentifier: `com.fourtec.${process.env.EXPO_PUBLIC_APP_SLUG || 'mobile'}`
     },
     android: {
       adaptiveIcon: {
-        foregroundImage: "./assets/images/adaptive-icon.png",
+        foregroundImage: "./assets/adaptive-icon.png",
         backgroundColor: "#ffffff"
       },
-      // Dynamic Package Name
-      package: `com.fourtec.${process.env.EXPO_PUBLIC_APP_SLUG || 'mobile'}`
+      // Dynamically matches the package namespace to prevent cross-app installation overwrites
+      package: `com.fourtec.${(process.env.EXPO_PUBLIC_APP_SLUG || 'mobile').replace(/[^a-zA-Z0-9]/g, '')}`
     },
     web: {
-      favicon: "./assets/images/favicon.png"
+      favicon: "./assets/favicon.png"
     },
+    plugins: ["expo-router"],
+    
+    // 3. The Dynamic Linking Engine
     extra: {
-      "eas": {
-        "projectId": "114e515a-70f9-46d4-9d2c-9fcd1908d2e9"
+      eas: {
+        // Reads the UUID from the pipeline execution block.
+        // If undefined, local builds gracefully fall back to native credentials.
+        projectId: process.env.EXPO_PROJECT_ID || undefined
       }
     }
   }

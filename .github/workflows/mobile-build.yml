@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  initialize-project:
     runs-on: ubuntu-latest
     steps:
       - name: 🔍 Checkout Repository
@@ -26,14 +26,20 @@ jobs:
       - name: 📦 Install Dependencies
         run: npm install --legacy-peer-deps
 
-      - name: 🏗 Queue EAS Build (no-wait)
+      - name: 🔗 Provision Expo Dashboard Slot
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          # Pass the variables so the configuration block can resolve during validation
+          EXPO_PUBLIC_APP_NAME: "AS Knud Jepsen Mobile"
+          EXPO_PUBLIC_APP_SLUG: "fourtec-asknudjepsen"
+          EXPO_PROJECT_ID: "your-client-specific-uuid-here"
         run: |
-          rm -rf .eas
-          npx eas-cli project:init --force --non-interactive
-          eas build --platform android --profile preview --non-interactive --no-wait
+          # We use project:info instead of project:init. 
+          # This forces EAS to look up or assert the project's existence on the cloud 
+          # without attempting to write back to your dynamic app.config.js!
+          npx eas-cli project:info --non-interactive
 
-      - name: ℹ️ Publish step
+      - name: ℹ️ Next Steps
         run: |
-          echo "Build queued. To produce a downloadable release artifact, run the 'Publish App' workflow."
+          echo "Project slot successfully asserted/created on Expo Dashboard."
+          echo "Run the 'Publish App' workflow whenever you are ready to compile the actual APK."
